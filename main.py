@@ -27,10 +27,6 @@ def init_navigation():
     if 'current_page' not in st.session_state:
         st.session_state.current_page = 'Home'
 
-
-# Set page config
-st.set_page_config(page_title="Invoice Refactoring MVP", layout="wide")
-
 # Database connection
 @st.cache_resource
 def get_connection():
