@@ -1,17 +1,21 @@
 import streamlit as st
 import sqlite3
 import os
-from pages import browse_invoices, home, create_invoice, dashboard, user_management, cash_transfers_page
 
+# Set page config FIRST - before any other Streamlit commands
+st.set_page_config(page_title="Invoice Refactoring MVP", layout="wide")
+
+# Now import pages and other modules
+from pages import browse_invoices, home, create_invoice, dashboard, user_management, cash_transfers_page
 from database.init_db import init_db
 
-# Initialize database if not exists
+# Initialize database if not exists (without displaying messages during initial load)
 DB_PATH = "invoice.db"
+database_just_initialized = False
+
 if not os.path.exists(DB_PATH):
     init_db()
-    st.success("Database initialized")
-else:
-    st.info("Using existing database")
+    database_just_initialized = True
 
 def navigate_to(page_name):
     """Navigate to a specific page"""
@@ -126,6 +130,12 @@ def sidebar_user_selection():
 
 # Main app
 def main():
+    # Show database initialization message only if it just happened
+    global database_just_initialized
+    if database_just_initialized:
+        st.success("✅ Database initialized successfully!")
+        database_just_initialized = False
+    
     # Create sidebar navigation
     create_sidebar_navigation()
     
