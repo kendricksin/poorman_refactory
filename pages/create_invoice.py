@@ -28,6 +28,14 @@ def app(conn):
     # Show current user
     st.success(f"Creating invoice as: **{st.session_state.selected_user['username']}**")
     
+    # Initialize session state for form success
+    if 'invoice_created' not in st.session_state:
+        st.session_state.invoice_created = False
+    if 'created_invoice_id' not in st.session_state:
+        st.session_state.created_invoice_id = None
+    if 'created_invoice_details' not in st.session_state:
+        st.session_state.created_invoice_details = None
+    
     with st.form("invoice_form"):
         st.markdown("### 📋 Invoice Details")
         
@@ -105,36 +113,64 @@ def app(conn):
                     conn, owner_id, debtor, original_amount, terms, sale_price
                 )
                 
-                st.success(f"🎉 Invoice created successfully! ID: #{invoice_id}")
-                st.balloons()
+                # Store success details in session state
+                st.session_state.invoice_created = True
+                st.session_state.created_invoice_id = invoice_id
+                st.session_state.created_invoice_details = {
+                    'debtor': debtor,
+                    'original_amount': original_amount,
+                    'sale_price': sale_price,
+                    'chunks_total': int(sale_price // 100)
+                }
                 
                 # Check if activation needed (shouldn't happen immediately, but good to check)
                 check_invoice_activation(conn, invoice_id)
                 
-                # Show next steps
-                st.markdown("### 🎯 What's Next?")
-                st.info(f"""
-                Your invoice has been created and is now available for investors to purchase.
-                
-                **Invoice #{invoice_id}** needs **{int(sale_price // 100)} investors** to buy ฿100 chunks each.
-                Once all chunks are sold, your invoice will activate and you'll receive ฿{sale_price:,.2f} immediately!
-                """)
-                
-                # Navigation options
-                st.markdown("### 🧭 Where to go next?")
-                nav_col1, nav_col2, nav_col3 = st.columns(3)
-                
-                with nav_col1:
-                    if st.button("🛒 Browse All Invoices", use_container_width=True):
-                        navigate_to("Browse Invoices")
-                
-                with nav_col2:
-                    if st.button("📊 My Dashboard", use_container_width=True):
-                        navigate_to("Dashboard")
-                
-                with nav_col3:
-                    if st.button("📝 Create Another", use_container_width=True):
-                        st.rerun()  # Refresh the current page
+                st.rerun()  # Rerun to show success message outside form
+    
+    # Show success message and navigation OUTSIDE the form
+    if st.session_state.invoice_created and st.session_state.created_invoice_id:
+        invoice_id = st.session_state.created_invoice_id
+        details = st.session_state.created_invoice_details
+        
+        st.success(f"🎉 Invoice created successfully! ID: #{invoice_id}")
+        st.balloons()
+        
+        # Show next steps
+        st.markdown("### 🎯 What's Next?")
+        st.info(f"""
+        Your invoice has been created and is now available for investors to purchase.
+        
+        **Invoice #{invoice_id}** needs **{details['chunks_total']} investors** to buy ฿100 chunks each.
+        Once all chunks are sold, your invoice will activate and you'll receive ฿{details['sale_price']:,.2f} immediately!
+        """)
+        
+        # Navigation options OUTSIDE the form
+        st.markdown("### 🧭 Where to go next?")
+        nav_col1, nav_col2, nav_col3, nav_col4 = st.columns(4)
+        
+        with nav_col1:
+            if st.button("🛒 Browse All Invoices", use_container_width=True, key="nav_browse"):
+                st.session_state.invoice_created = False  # Reset success state
+                navigate_to("Browse Invoices")
+        
+        with nav_col2:
+            if st.button("📊 My Dashboard", use_container_width=True, key="nav_dashboard"):
+                st.session_state.invoice_created = False  # Reset success state
+                navigate_to("Dashboard")
+        
+        with nav_col3:
+            if st.button("📝 Create Another", use_container_width=True, key="nav_create_another"):
+                # Reset form state
+                st.session_state.invoice_created = False
+                st.session_state.created_invoice_id = None
+                st.session_state.created_invoice_details = None
+                st.rerun()
+        
+        with nav_col4:
+            if st.button("🏠 Go Home", use_container_width=True, key="nav_home"):
+                st.session_state.invoice_created = False  # Reset success state
+                navigate_to("Home")
     
     # Help section
     st.markdown("---")

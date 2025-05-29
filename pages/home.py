@@ -12,13 +12,13 @@ def create_quick_actions():
     import streamlit as st
     
     if not st.session_state.selected_user:
-        st.info("👆 Select a user from sidebar to see quick actions")
+        st.info("👆 Select a user from the dropdown above to see quick actions")
         return
     
     col1, col2, col3 = st.columns(3)
     
     with col1:
-        if st.button("📝 Create Invoice", use_container_width=True):
+        if st.button("📝 Create Invoice", use_container_width=True, type="primary"):
             navigate_to("Create Invoice")
     
     with col2:
@@ -30,10 +30,6 @@ def create_quick_actions():
             navigate_to("Dashboard")
 
 def app(conn):
-    # Add breadcrumb (just for Home page, it's simple)
-    st.markdown("🏠 **Home**")
-    st.markdown("---")
-    
     st.title("🏦 Invoice Refactoring MVP")
     st.markdown("**Turn your outstanding invoices into immediate cash flow**")
     
