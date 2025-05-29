@@ -5,10 +5,10 @@ from utils.helpers import check_invoice_activation
 def app(conn):
     st.title("Create New Invoice")
     
-    if not st.session_state.user:
-        st.warning("Please log in first")
+    if not st.session_state.selected_user:
+        st.warning("Please select a user in the User Management tab first")
         return
-    
+        
     with st.form("invoice_form"):
         debtor = st.text_input("Debtor Name")
         original_amount = st.number_input("Original Amount (THB)", min_value=100.0)
@@ -17,7 +17,7 @@ def app(conn):
         submit = st.form_submit_button("Create Invoice")
         
         if submit:
-            owner_id = st.session_state.user["user_id"]
+            owner_id = st.session_state.selected_user["user_id"]
             invoice_id = invoice_model.create_invoice(
                 conn, owner_id, debtor, original_amount, terms, sale_price
             )

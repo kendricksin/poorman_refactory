@@ -77,3 +77,22 @@ def get_user_transactions(conn, user_id):
         ORDER BY purchase_timestamp DESC
     """, (user_id,))
     return cursor.fetchall()
+
+def purchase_chunks(conn, invoice_id, buyer_id, chunks):
+    cursor = conn.cursor()
+    
+    # Insert the transaction
+    cursor.execute("""
+        INSERT INTO transactions (
+            invoice_id, buyer_user_id, chunks_purchased
+        ) VALUES (?, ?, ?)
+    """, (invoice_id, buyer_id, chunks))
+    
+    # Update the invoice's sold chunks
+    cursor.execute("""
+        UPDATE invoices 
+        SET chunks_sold = chunks_sold + ?
+        WHERE invoice_id = ?
+    """, (chunks, invoice_id))
+    
+    conn.commit()

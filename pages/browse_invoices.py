@@ -7,6 +7,10 @@ def app(conn):
     st.title("Browse Available Invoices")
     
     invoices = invoice_model.get_all_invoices(conn)
+
+    if not st.session_state.selected_user:
+        st.warning("Please select a user in the User Management tab first")
+        return
     
     if not invoices:
         st.info("No available invoices at the moment.")
@@ -33,7 +37,8 @@ def app(conn):
                 st.write(f"**Chunks Remaining:** {remaining}")
                 
             with col2:
-                if status == 'Pending':
+                remaining = chunks_total - chunks_sold
+                if status == 'Pending' and remaining > 0:
                     chunks_to_buy = st.number_input(
                         "Chunks to Buy", 
                         min_value=1, 
@@ -42,11 +47,10 @@ def app(conn):
                     )
                     
                     if st.button(f"Buy {chunks_to_buy} Chunks", key=f"btn_{invoice_id}"):
-                        if st.session_state.user:
-                            transaction_model.purchase_chunks(
-                                conn, invoice_id, st.session_state.user['user_id'], chunks_to_buy
-                            )
-                            st.success(f"Purchased {chunks_to_buy} chunks!")
-                            st.experimental_rerun()
-                        else:
-                            st.warning("Please log in first")
+                        transaction_model.purchase_chunks(
+                            conn, invoice_id, st.session_state.selected_user['user_id'], chunks_to_buy
+                        )
+                        st.success(f"Purchased {chunks_to_buy} chunks!")
+                        st.experimental_rerun()
+                else:
+                    st.info("Fully Funded")
