@@ -1,6 +1,17 @@
 import streamlit as st
 import sqlite3
+import os
 from pages import browse_invoices, home, create_invoice, dashboard, user_management, cash_transfers_page
+
+from database.init_db import init_db
+
+# Initialize database if not exists
+DB_PATH = "invoice.db"
+if not os.path.exists(DB_PATH):
+    init_db()
+    st.success("Database initialized")
+else:
+    st.info("Using existing database")
 
 def navigate_to(page_name):
     """Navigate to a specific page"""
@@ -16,8 +27,6 @@ def init_navigation():
     if 'current_page' not in st.session_state:
         st.session_state.current_page = 'Home'
 
-# Initialize database
-import database.init_db
 
 # Set page config
 st.set_page_config(page_title="Invoice Refactoring MVP", layout="wide")
